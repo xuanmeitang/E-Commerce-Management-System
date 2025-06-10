@@ -1,5 +1,4 @@
 # Vue 3 + TypeScript + Vite
-
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+此项目为'易购物商城后台管理系统'，旨在对于商城用户的权限以及商品的数据管理
+基于 Vite 4 搭建，使用TypeScript 开发，严格类型约束减少运行时错误
+并且集成 ECharts 实现数据多维分析看板。
