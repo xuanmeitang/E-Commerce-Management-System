@@ -4,14 +4,12 @@
         <el-card style="height: 80px;" class="search">
             <el-form class="form">
                 <el-form-item label="技术栈">
-                    <el-select placeholder="请选择技术栈" style="width: 200px">
-                        <el-option label="前端" value="frontend"></el-option>
-                        <el-option label="后端" value="backend"></el-option>
-                        <el-option label="全栈" value="fullstack"></el-option>
+                    <el-select placeholder="请选择技术栈" style="width: 200px" v-model="searchData.techStack">
+                        <el-option v-for="techStack in techOptions" :key="techStack" :label="techStack" :value="techStack"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="GitHub账号">
-                    <el-input placeholder="请输入GitHub用户名"></el-input>
+                    <el-input placeholder="请输入GitHub用户名" v-model="searchData.github"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" size="default" @click="research" icon="Search">搜索</el-button>
@@ -74,6 +72,39 @@
         
         <!-- 添加开发者抽屉 -->
         <el-drawer v-model="drawerVisible" title="添加新开发者" size="40%">
+            <el-form :model="developerForm" label-width="120px">
+                <el-form-item label="开发者姓名">
+                    <el-input v-model="developerForm.name" placeholder="请输入姓名"></el-input>
+                </el-form-item>
+                <el-form-item label="技术栈">
+                    <el-select 
+                        v-model="developerForm.techStack" 
+                        multiple 
+                        placeholder="请选择技术栈"
+                        style="width: 100%"
+                    >
+                        <el-option 
+                            v-for="tech in techOptions" 
+                            :key="tech" 
+                            :label="tech" 
+                            :value="tech"
+                        ></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="GitHub账号">
+                    <el-input v-model="developerForm.github" placeholder="请输入GitHub用户名"></el-input>
+                </el-form-item>
+                <el-form-item label="初始项目数">
+                    <el-input-number v-model="developerForm.projectCount" :min="0"></el-input-number>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitDeveloper">提交</el-button>
+                    <el-button @click="drawerVisible = false">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-drawer>
+        <!-- 添加编辑抽屉 -->
+        <el-drawer v-model="drawerEdit" title="编辑开发者" size="40%">
             <el-form :model="developerForm" label-width="120px">
                 <el-form-item label="开发者姓名">
                     <el-input v-model="developerForm.name" placeholder="请输入姓名"></el-input>
@@ -183,11 +214,6 @@ const developerForm = reactive({
     projectCount: 0
 })
 
-const currentPageData = computed(() => {
-    const start = (pageNo.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    return DeveloperData.slice(start, end)
-})
 
 const sizeChange = (newSize) => {
     pageSize.value = newSize
@@ -230,6 +256,37 @@ const getActivityColor = (activity) => {
     if (activity >= 60) return '#409EFF'
     if (activity >= 40) return '#E6A23C'
     return '#F56C6C'
+}
+
+//实现重置功能
+const refresh = () => {
+    searchData.techStack = '';
+    searchData.github = '';
+    // 重新计算 currentPageData，刷新表格数据
+    currentPageData.value = currentPageData.value;
+}
+//实现搜索功能
+const drawerEdit = ref(false)
+const searchData = reactive({
+    techStack :'',
+    github: '',
+})
+const currentPageData = computed(() => {
+    //筛选数据
+    const filteredData = DeveloperData.filter((item) => {
+        //模糊匹配
+        const techStackMatch = !searchData.techStack || item.techStack.some(tech => tech.includes(searchData.techStack));
+        const githubMatch = !searchData.github || item.github.includes(searchData.github);
+        return techStackMatch&& githubMatch
+    })
+
+
+    const start = (pageNo.value - 1) * pageSize.value
+    const end = start + pageSize.value
+    return filteredData.slice(start, end)
+}) 
+const research = () => {
+    currentPageData.value = currentPageData.value;
 }
 </script>
 

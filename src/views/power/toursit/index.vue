@@ -4,7 +4,7 @@
         <el-card style="height: 80px;" class="search">
             <el-form class="form">
                 <el-form-item label="用户名">
-                    <el-input placeholder="请输入用户名"></el-input>
+                    <el-input placeholder="请输入用户姓名" v-model="searchData.UserName" @keyup.enter="research"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" size="default" @click="research">搜索</el-button>
@@ -28,9 +28,9 @@
                 <el-table-column label="更新时间" align="center" show-overflow-tooltip prop="updateTime"></el-table-column>
                 <el-table-column label="操作" width="280px" align="center">
                     <template #default="{ row }">
-                        <el-button type="primary" size="small" icon="User" >分配权限</el-button>
-                        <el-button type="primary" size="small" icon="Edit" >编辑</el-button>
-                        <el-popconfirm :title="`你确定要删除${row.roleName}?`" width="260px" >
+                        <el-button type="primary" size="small" icon="User">分配权限</el-button>
+                        <el-button type="primary" size="small" icon="Edit">编辑</el-button>
+                        <el-popconfirm :title="`你确定要删除${row.roleName}?`" width="260px">
                             <template #reference>
                                 <el-button type="primary" size="small" icon="Delete">删除</el-button>
                             </template>
@@ -41,8 +41,8 @@
             </el-table>
             <!-- 分页器 -->
             <el-pagination v-model:current-page="pageNo" v-model:page-size="pageSize" :page-sizes="[3, 5, 7, 9]"
-                :background="true" layout="prev, pager, next, jumper, ->, sizes, total" :total="UserData.length"
-                @current-change="getHasRole" @size-change="sizeChange" />
+                :background="true" layout="prev, pager, next, jumper, ->, sizes, total"
+                :total="currentPageData.length * pageSize" @current-change="getHasRole" @size-change="sizeChange" />
         </el-card>
         <el-drawer v-model="drawer">
             <template>
@@ -121,11 +121,7 @@ const UserData = reactive([
         phone: '18800518800'
     }
 ])
-const currentPageData = computed(() => {
-    const start = (pageNo.value - 1) * pageSize.value;
-    const end = start + pageSize.value;
-    return UserData.slice(start, end);
-});
+
 const sizeChange = (newSize) => {
     pageSize.value = newSize;
 };
@@ -135,10 +131,33 @@ const getHasRole = (newPage) => {
 
 };
 
-const addUser = () => { 
+const addUser = () => {
     drawer.value = true
 }
-const delUser = ()=> {}
+const delUser = () => { }
+
+//实现搜索功能
+const searchData = reactive({
+    UserName: ''
+})
+//重置到第一页
+const research = () => {
+    searchData.UserName = ''
+    pageNo.value = 1
+}
+//更新搜索数据
+const currentPageData = computed(() => {
+    // 筛选数据
+    const filteredData = UserData.filter(item => {
+        // 如果没有搜索条件或搜索条件为空，返回所有数据
+        if (!searchData.UserName) return true
+        // 执行不区分大小写的搜索
+        return item.name.toLowerCase().includes(searchData.UserName.toLowerCase())
+    })
+    const start = (pageNo.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return filteredData.slice(start, end);
+});
 </script>
 
 <style scoped>
@@ -157,7 +176,3 @@ const delUser = ()=> {}
     margin-top: 20px;
 }
 </style>
-
-
-
-
