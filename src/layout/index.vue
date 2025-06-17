@@ -17,7 +17,7 @@
                                 <Monitor />
                             </el-icon>数据大屏</span>
                     </el-menu-item>
-                    <el-sub-menu index="3" >
+                    <el-sub-menu index="3">
                         <template #title>
                             <span class="nav-text"><el-icon>
                                     <Lock />
@@ -39,7 +39,7 @@
             </div>
             <div class="right-content">
                 <div class="content">
-                    <router-view ></router-view>
+                    <router-view></router-view>
                 </div>
             </div>
         </div>
