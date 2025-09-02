@@ -5,7 +5,7 @@ import App from './App.vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import SvgIcon from './components/SvgIcon/index.vue';
 import router from '@/router/routes'
-import pinia from '@/store'
+import { pinia, useCounterStore } from '@/store/user'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 

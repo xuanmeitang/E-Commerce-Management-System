@@ -7,61 +7,16 @@
     <main class="dashboard-main">
       <!-- 数据概览卡片 -->
       <div class="overview-cards">
-        <el-card class="stat-card" shadow="hover">
+        <el-card v-for="(card, index) in overviewCards" :key="index" class="stat-card" shadow="hover">
           <div class="stat-content">
-            <div class="stat-icon" style="background-color: #f0f7ff;">
-              <i class="el-icon-shopping-cart-full" style="color: #409EFF;"></i>
+            <div class="stat-icon" :style="{backgroundColor: card.bgColor}">
+              <component :is="getIconComponent(card.icon)" :style="{color: card.color}"></component>
             </div>
             <div class="stat-info">
-              <div class="stat-title">今日订单</div>
-              <div class="stat-value">1,248</div>
-              <div class="stat-trend up">
-                <i class="el-icon-top"></i> 12.5%
-              </div>
-            </div>
-          </div>
-        </el-card>
-
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon" style="background-color: #f0f9eb;">
-              <i class="el-icon-coin" style="color: #67C23A;"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-title">今日销售额</div>
-              <div class="stat-value">¥86,540</div>
-              <div class="stat-trend up">
-                <i class="el-icon-top"></i> 8.3%
-              </div>
-            </div>
-          </div>
-        </el-card>
-
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon" style="background-color: #fdf6ec;">
-              <i class="el-icon-user" style="color: #E6A23C;"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-title">新增用户</div>
-              <div class="stat-value">326</div>
-              <div class="stat-trend down">
-                <i class="el-icon-bottom"></i> 2.1%
-              </div>
-            </div>
-          </div>
-        </el-card>
-
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <div class="stat-icon" style="background-color: #fef0f0;">
-              <i class="el-icon-chat-line-square" style="color: #F56C6C;"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-title">待处理售后</div>
-              <div class="stat-value">24</div>
-              <div class="stat-trend up">
-                <i class="el-icon-top"></i> 3.2%
+              <div class="stat-title">{{card.title}}</div>
+              <div class="stat-value">{{card.value}}</div>
+              <div :class="['stat-trend', card.trendType]">
+                <component :is="card.trendType === 'up' ? 'ArrowUp' : 'ArrowDown'"></component> {{card.trend}}%
               </div>
             </div>
           </div>
@@ -97,11 +52,11 @@
               <span>月度目标完成度</span>
             </template>
             <div class="progress-container">
-              <el-progress type="dashboard" :percentage="75" :width="120" 
+              <el-progress type="dashboard" :percentage="targetCompletion.percentage" :width="120" 
                 :color="['#409EFF', '#67C23A']">
                 <template #default>
                   <div class="progress-label">
-                    <div class="value">75%</div>
+                    <div class="value">{{targetCompletion.percentage}}%</div>
                     <div class="text">完成率</div>
                   </div>
                 </template>
@@ -109,15 +64,15 @@
               <div class="progress-stats">
                 <div class="stat-item">
                   <div class="label">目标</div>
-                  <div class="value">¥500,000</div>
+                  <div class="value">{{targetCompletion.target}}</div>
                 </div>
                 <div class="stat-item">
                   <div class="label">已完成</div>
-                  <div class="value">¥375,000</div>
+                  <div class="value">{{targetCompletion.completed}}</div>
                 </div>
                 <div class="stat-item">
                   <div class="label">剩余</div>
-                  <div class="value">¥125,000</div>
+                  <div class="value">{{targetCompletion.remaining}}</div>
                 </div>
               </div>
             </div>
@@ -132,11 +87,21 @@
             <span>快捷操作</span>
           </template>
           <div class="action-buttons">
-            <el-button type="primary" icon="el-icon-plus">新增商品</el-button>
-            <el-button type="success" icon="el-icon-tickets">订单处理</el-button>
-            <el-button type="warning" icon="el-icon-s-promotion">营销活动</el-button>
-            <el-button type="info" icon="el-icon-user-solid">会员管理</el-button>
-            <el-button type="danger" icon="el-icon-warning">售后处理</el-button>
+            <el-button type="primary">
+              <el-icon><Plus /></el-icon>新增商品
+            </el-button>
+            <el-button type="success">
+              <el-icon><Tickets /></el-icon>订单处理
+            </el-button>
+            <el-button type="warning">
+              <el-icon><Promotion /></el-icon>营销活动
+            </el-button>
+            <el-button type="info">
+              <el-icon><User /></el-icon>会员管理
+            </el-button>
+            <el-button type="danger">
+              <el-icon><Warning /></el-icon>售后处理
+            </el-button>
           </div>
         </el-card>
       </div>
@@ -178,154 +143,266 @@
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, onActivated, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { getHomeData } from '@/api/home'
+import { ElMessage } from 'element-plus'
+import {
+  Plus,
+  Tickets,
+  Promotion,
+  User,
+  Warning,
+  ShoppingCart,
+  Money,
+  View,
+  ChatLineSquare,
+  ArrowUp,
+  ArrowDown
+} from '@element-plus/icons-vue'
 
-export default {
-  setup() {
-    const chartType = ref('day')
-    const salesChart = ref(null)
-    const categoryChart = ref(null)
-    const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
-    
-    const orderData = ref([
-      { id: '20230516001', customer: '张先生', amount: '568.00', status: '已付款', time: '2023-05-16 09:23:45' },
-      { id: '20230515002', customer: '李女士', amount: '1299.00', status: '已发货', time: '2023-05-15 14:12:33' },
-      { id: '20230515003', customer: '王先生', amount: '328.00', status: '已完成', time: '2023-05-15 11:45:21' },
-      { id: '20230514004', customer: '赵女士', amount: '789.00', status: '待付款', time: '2023-05-14 18:30:15' },
-      { id: '20230514005', customer: '刘先生', amount: '1560.00', status: '已退款', time: '2023-05-14 16:22:47' },
-      { id: '20230513006', customer: '陈女士', amount: '432.00', status: '已发货', time: '2023-05-13 10:11:09' },
-      { id: '20230512007', customer: '杨先生', amount: '899.00', status: '已完成', time: '2023-05-12 13:45:30' }
-    ])
+// 类型定义
+interface OrderItem {
+  id: string;
+  customer: string;
+  amount: string;
+  status: string;
+  time: string;
+}
 
-    const getStatusType = (status) => {
-      const map = {
-        '待付款': 'warning',
-        '已付款': '',
-        '已发货': 'success',
-        '已完成': 'info',
-        '已退款': 'danger'
-      }
-      return map[status] || ''
-    }
+interface OverviewCard {
+  title: string;
+  value: string;
+  trend: number;
+  trendType: 'up' | 'down';
+  icon: string;
+  color: string;
+  bgColor: string;
+}
 
-    onMounted(() => {
-      // 初始化销售趋势图表
-      const salesChartInstance = echarts.init(salesChart.value)
-      salesChartInstance.setOption({
-        tooltip: {
-          trigger: 'axis'
-        },
-        legend: {
-          data: ['销售额', '订单量']
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: Array.from({length: 30}, (_, i) => `${i+1}日`)
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [
-          {
-            name: '销售额',
-            type: 'line',
-            smooth: true,
-            data: Array.from({length: 30}, () => Math.floor(Math.random() * 10000) + 5000),
-            itemStyle: {
-              color: '#409EFF'
-            },
-            areaStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: 'rgba(64, 158, 255, 0.5)' },
-                { offset: 1, color: 'rgba(64, 158, 255, 0.1)' }
-              ])
-            }
-          },
-          {
-            name: '订单量',
-            type: 'line',
-            smooth: true,
-            data: Array.from({length: 30}, () => Math.floor(Math.random() * 200) + 100),
-            itemStyle: {
-              color: '#67C23A'
-            }
-          }
-        ]
-      })
+interface CategoryItem {
+  value: number;
+  name: string;
+}
 
-      // 初始化商品类别图表
-      const categoryChartInstance = echarts.init(categoryChart.value)
-      categoryChartInstance.setOption({
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          orient: 'vertical',
-          right: 10,
-          top: 'center'
-        },
-        series: [
-          {
-            name: '商品类别',
-            type: 'pie',
-            radius: ['40%', '70%'],
-            avoidLabelOverlap: false,
-            itemStyle: {
-              borderRadius: 10,
-              borderColor: '#fff',
-              borderWidth: 2
-            },
-            label: {
-              show: false,
-              position: 'center'
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: '18',
-                fontWeight: 'bold'
-              }
-            },
-            labelLine: {
-              show: false
-            },
-            data: [
-              { value: 1048, name: '电子产品' },
-              { value: 735, name: '家居用品' },
-              { value: 580, name: '服装服饰' },
-              { value: 484, name: '食品饮料' },
-              { value: 300, name: '其他' }
-            ],
-            color: ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399']
-          }
-        ]
-      })
+interface SalesChartData {
+  xAxis: string[];
+  series: {
+    name: string;
+    type: string;
+    data: number[];
+  }[];
+}
 
-      // 响应式调整图表大小
-      window.addEventListener('resize', () => {
-        salesChartInstance.resize()
-        categoryChartInstance.resize()
-      })
-    })
+interface TargetCompletion {
+  percentage: number;
+  target: string;
+  completed: string;
+  remaining: string;
+}
 
-    return {
-      chartType,
-      salesChart,
-      categoryChart,
-      userAvatar,
-      orderData,
-      getStatusType
-    }
+// 响应式数据
+const chartType = ref('day')
+const salesChart = ref<HTMLElement | null>(null)
+const categoryChart = ref<HTMLElement | null>(null)
+const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
+
+// 使用ref创建响应式数据
+const orderData = ref<OrderItem[]>([])
+const overviewCards = ref<OverviewCard[]>([])
+const categoryData = ref<CategoryItem[]>([])
+const salesChartData = ref<SalesChartData>({
+  xAxis: [],
+  series: []
+})
+const targetCompletion = ref<TargetCompletion>({
+  percentage: 0,
+  target: '',
+  completed: '',
+  remaining: ''
+})
+
+// 获取状态类型
+const getStatusType = (status: string): string => {
+  const map: Record<string, string> = {
+    '待付款': 'warning',
+    '已付款': '',
+    '已发货': 'success',
+    '已完成': 'info',
+    '已退款': 'danger'
   }
+  return map[status] || ''
+}
+
+// 图标映射函数
+const getIconComponent = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    'el-icon-shopping-cart-full': ShoppingCart,
+    'el-icon-coin': Money,
+    'el-icon-user': User,
+    'el-icon-view': View,
+    'el-icon-chat-line-square': ChatLineSquare
+  }
+  return iconMap[iconName] || ShoppingCart
+}
+
+// 加载状态
+const loading = ref(true)
+
+// 默认数据，确保在数据加载前有内容显示
+orderData.value = [
+  { id: '加载中...', customer: '加载中...', amount: '加载中...', status: '加载中...', time: '加载中...' },
+]
+overviewCards.value = [
+  { title: '今日订单', value: '0', trend: 0, trendType: 'up', icon: 'el-icon-shopping-cart-full', color: '#409EFF', bgColor: '#f0f7ff' },
+  { title: '今日销售额', value: '¥0', trend: 0, trendType: 'up', icon: 'el-icon-coin', color: '#67C23A', bgColor: '#f0f9eb' },
+  { title: '新增用户', value: '0', trend: 0, trendType: 'up', icon: 'el-icon-user', color: '#E6A23C', bgColor: '#fdf6ec' },
+  { title: '总访问量', value: '0', trend: 0, trendType: 'up', icon: 'el-icon-view', color: '#F56C6C', bgColor: '#fef0f0' }
+]
+
+// 定义首页数据接口
+interface HomeData {
+  orderData: OrderItem[];
+  overviewCards: OverviewCard[];
+  categoryData: CategoryItem[];
+  salesData: SalesChartData;
+  targetCompletion: TargetCompletion;
+}
+
+// 加载数据的方法
+const loadData = () => {
+  loading.value = true
+  console.log('开始加载首页数据')
+  
+  // 使用axios获取数据
+  getHomeData().then((res: any) => {
+    const data = res as HomeData;
+    console.log('获取到首页数据:', data)
+    // 设置数据
+    orderData.value = data.orderData
+    overviewCards.value = data.overviewCards
+    categoryData.value = data.categoryData
+    salesChartData.value = data.salesData
+    targetCompletion.value = data.targetCompletion
+    loading.value = false
+    
+    // 使用nextTick确保DOM已经更新
+    nextTick(() => {
+      // 初始化图表
+      initCharts()
+    })
+  }).catch(err => {
+    loading.value = false
+    console.error('获取首页数据失败:', err)
+    // 添加错误提示
+    ElMessage.error('获取数据失败，请稍后重试')
+  })
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadData()
+})
+
+// 组件激活时重新加载数据（用于路由切换后返回）
+onActivated(() => {
+  loadData()
+})
+
+// 初始化图表的方法
+const initCharts = () => {
+  if (!salesChart.value || !categoryChart.value) return
+  
+  // 初始化销售趋势图表
+  const salesChartInstance = echarts.init(salesChart.value)
+  salesChartInstance.setOption({
+    tooltip: {
+      trigger: 'axis'
+    },
+    legend: {
+      data: salesChartData.value.series.map(item => item.name)
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: salesChartData.value.xAxis
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: salesChartData.value.series.map(item => ({
+      name: item.name,
+      type: item.type,
+      smooth: true,
+      data: item.data,
+      itemStyle: {
+        color: item.name === '销售额' ? '#409EFF' : '#67C23A'
+      },
+      ...(item.name === '销售额' ? {
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(64, 158, 255, 0.5)' },
+            { offset: 1, color: 'rgba(64, 158, 255, 0.1)' }
+          ])
+        }
+      } : {})
+    }))
+  })
+
+  // 初始化商品类别图表
+  const categoryChartInstance = echarts.init(categoryChart.value)
+  categoryChartInstance.setOption({
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      orient: 'vertical',
+      right: 10,
+      top: 'center'
+    },
+    series: [
+      {
+        name: '商品类别',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: '18',
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: categoryData.value,
+        color: ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399']
+      }
+    ]
+  })
+
+  // 响应式调整图表大小
+  window.addEventListener('resize', () => {
+    salesChartInstance.resize()
+    categoryChartInstance.resize()
+  })
 }
 </script>
 

@@ -1,19 +1,13 @@
 <template>
   <div class="container">
     <div class="screen" ref="screen">
-      <div class="top">
-        <div class="top-left">
-          <div class="left-button" @click="goHome"><span>首页</span></div>
-        </div>
-        <div class="top-center">
-          <div class="center-title">指挥旅游可视化数据中心</div>
-        </div>
-        <div class="top-right">
-          <div class="right-button">
-            <span>统计报告</span>
-          </div> 
-          <span class="time">{{ formattedTime }}</span>
-        </div>
+      <div class="header">
+        <button class="home-btn" @click="goHome">
+          <i class="home-icon">🏠</i>
+          <span>返回首页</span>
+        </button>
+        <h1>电商运营数据可视化中心</h1>
+        <span class="time">{{ formattedTime }}</span>
       </div>
       <div class="bottom">
       <!-- 左侧：垂直三等分 -->
@@ -79,13 +73,25 @@ function getScale(w = 1920, h = 1080) {
   return Math.min(ww, wh)
 }
 
-//获取时间
-let currentTime = new Date();
-let formattedTime = currentTime.toLocaleString('zh-CN', {
+// 实时时间显示
+const formattedTime = ref('');
+
+// 更新时间的函数
+function updateTime() {
+  const now = new Date();
+  formattedTime.value = now.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-}).replace(/\//g, '-').replace(/,/, '');
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/\//g, '-');
+}
+
+// 定时器更新时间
+let timeInterval = null;
 
 //解决自适应问题
 function updateTransform() {
@@ -96,10 +102,16 @@ function updateTransform() {
 }
 onMounted(() => {
   updateTransform()
+  updateTime() // 初始化时间
+  timeInterval = setInterval(updateTime, 1000) // 每秒更新时间
   window.addEventListener('resize', updateTransform)
 })
+
 onUnmounted(() => {
   window.removeEventListener('resize', updateTransform)
+  if (timeInterval) {
+    clearInterval(timeInterval)
+  }
 })
 </script>
 
@@ -111,90 +123,145 @@ onUnmounted(() => {
 .container {
   width: 100vw;
   height: 100vh;
-  background:url(./images/bg.png) no-repeat;
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 25%, #0d1117 50%, #1c2331 75%, #0a0e1a 100%);
   position: relative;
   overflow: hidden;
-  margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(41, 252, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 107, 107, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .screen {
   position: fixed;
   width: 1920px;
   height: 1080px;
-
   left: 50%;
   top: 50%;
-  transform-origin: 0 0;  /* 关键修改点 */
-  transform: translate(-50%, -50%);  /* 初始变换 */
+  transform-origin: 0 0;
+  transform: translate(-50%, -50%);
 }
-.top {
-  width:100%;
-  height:50px;
-  display:flex;
-  position :relative;
-}
-.top-left {
-  flex :1;
-  background:url(./images/dataScreen-header-left-bg.png) no-repeat ;
-  background-size :cover;
-  padding-top : 5px;
-}
-.top-center{
-  flex :2;
-  background:url(./images/dataScreen-header-center-bg.png) no-repeat;
-  background-size :cover;
-}
-.top-right{
-  flex:1;
-  background:url(./images/dataScreen-header-right-bg.png) no-repeat;
-  background-size :cover;
-}
-.left-button{
-  width:150px;
-  height :50px;
-  float:right;
-  background: url(./images/dataScreen-header-btn-bg-r.png) no-repeat;
-  text-align: center;
-  line-height: 50px;
-  color:#29fcff;
-  font-size: 20x;
 
-}
-.right-button{
-  width:150px;
-  height :50px;
-  float:left;
-  background: url(./images/dataScreen-header-btn-bg-l.png) no-repeat;
-  text-align: center;
-  line-height: 50px;
-  color:#29fcff;
-  font-size: 20x;
-}
-.center-title  {
-  background:url(./images/dataScreen-header-center-bg.png) no-repeat;
-  background-size : 100% 100%;
+.header {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.9) 100%);
+  border-bottom: 2px solid rgba(41, 252, 255, 0.4);
+  position: relative;
+  display: flex;
   align-items: center;
-  width:100%;
-  height: 74px;
-  font-size: 30px;
-  text-align: center;
-  line-height: 74px;
-  color:#29fcff;
+  justify-content: center;
+  padding: 0 50px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
-.time {
-  color:#29fcff;
-  line-height: 50px;
-  font-size: 20px;
-  float:right;
-  padding-right : 30px;
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
+  box-shadow: 0 0 10px #29fcff;
+}
+
+.header h1 {
+  font-size: 28px;
+  text-align: center;
+  line-height: 60px;
+  color: #29fcff;
+  text-shadow: 0 0 20px rgba(41, 252, 255, 0.5);
+  font-weight: bold;
+  letter-spacing: 2px;
+  position: relative;
+  margin: 0;
+}
+
+.header h1::before {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff);
+}
+
+.header h1::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, #29fcff, transparent);
+}
+.home-btn {
+  position: absolute;
+  left: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, rgba(41, 252, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 6px;
+  color: #29fcff;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-btn:hover {
+  background: linear-gradient(135deg, rgba(41, 252, 255, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%);
+  border-color: #29fcff;
+  box-shadow: 0 4px 15px rgba(41, 252, 255, 0.3);
+  transform: translateY(-50%) translateY(-2px);
+}
+
+.home-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 5px rgba(41, 252, 255, 0.5));
+}
+
+.header .time {
+  position: absolute;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #29fcff;
+  font-size: 16px;
+  text-shadow: 0 0 10px rgba(41, 252, 255, 0.5);
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 .bottom {
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - 60px);
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 /* 左侧盒子（1:2:1比例） */
@@ -205,17 +272,46 @@ onUnmounted(() => {
   gap: 8px;
 }
 .left-top {
-  flex: 1.5; /* 占左侧总高度的1.5/3.5 */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
-  max-width: 100%; /* 或者具体的像素值 */
-  max-height: 100%;
+  flex: 1.5;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
   overflow: hidden;
+  padding: 12px;
+}
+.left-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
 }
 .left-middle, .left-bottom {
-  flex: 1; /* 各占1/3.5 */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
+  flex: 1;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+}
+.left-middle::before, .left-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
 }
 
 /* 中间盒子（7:3比例） */
@@ -226,14 +322,46 @@ onUnmounted(() => {
   gap: 8px;
 }
 .center-top {
-  flex: 7; /* 70% */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
+  flex: 7;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+}
+.center-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
 }
 .center-bottom {
-  flex: 3; /* 30% */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
+  flex: 3;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+}
+.center-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
 }
 
 /* 右侧盒子（1.5:1:1比例） */
@@ -244,13 +372,71 @@ onUnmounted(() => {
   gap: 8px;
 }
 .right-top {
-  flex: 1.5; /* 占右侧总高度的1.5/3.5 */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
+  flex: 1.5;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+}
+.right-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
 }
 .right-middle, .right-bottom {
-  flex: 1; /* 各占1/3.5 */
-  background: rgba(0, 92, 169, 0.3);
-  border: 1px dashed #29fcff;
+  flex: 1;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+  border: 1px solid rgba(41, 252, 255, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+}
+.right-middle::before, .right-bottom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #29fcff, transparent);
+}
+
+/* 添加悬停效果 */
+.left-top:hover, .left-middle:hover, .left-bottom:hover,
+.center-top:hover, .center-bottom:hover,
+.right-top:hover, .right-middle:hover, .right-bottom:hover {
+  border-color: #29fcff;
+  box-shadow: 0 8px 25px rgba(41, 252, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+/* 添加动画效果 */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(41, 252, 255, 0.3);
+  }
+}
+
+.left-top, .left-middle, .left-bottom,
+.center-top, .center-bottom,
+.right-top, .right-middle, .right-bottom {
+  animation: glow 3s ease-in-out infinite;
+  transition: all 0.3s ease;
 }
 </style>  

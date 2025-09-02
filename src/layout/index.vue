@@ -28,6 +28,17 @@
                             <component :is="item.icon" :style="size" /> {{ item.title }}
                         </el-menu-item>
                     </el-sub-menu>
+                    <el-sub-menu index="4">
+                        <template #title>
+                            <span class="nav-text"><el-icon>
+                                    <Setting />
+                                </el-icon>系统管理</span>
+                        </template>
+                        <el-menu-item v-for="item in managementItems" :key="item.index" :index="item.index"
+                            @click="goPage(item)">
+                            <component :is="item.icon" :style="size" /> {{ item.title }}
+                        </el-menu-item>
+                    </el-sub-menu>
                 </el-menu>
             </el-scrollbar>
         </div>
@@ -57,9 +68,14 @@ const router = useRouter()
 const route = useRoute()
 const activeIndex = ref('1');
 const permissionItems = ref([
-    { index: '3-1', title: '游客权限', icon: 'Avatar', route: '/power/tourist' },
-    { index: '3-2', title: '开发者权限', icon: 'UserFilled', route: '/power/develop' },
-    { index: '3-3', title: '管理者权限', icon: 'User', route: '/power/manager' },
+    { index: '3-1', title: '角色管理', icon: 'Avatar', route: '/power/roles' },
+    { index: '3-2', title: '权限配置', icon: 'Tools', route: '/power/permissions' },
+    { index: '3-3', title: '用户权限', icon: 'UserFilled', route: '/power/users' },
+])
+const managementItems = ref([
+    { index: '4-1', title: '客户管理', icon: 'User', route: '/management/customer' },
+    { index: '4-2', title: '商品管理', icon: 'Goods', route: '/management/product' },
+    { index: '4-3', title: '订单管理', icon: 'ShoppingCart', route: '/management/order' },
 ])
 const size = {
     width: '14px',
@@ -83,12 +99,21 @@ watch(route, (newRoute) => {
         activeIndex.value = '2';
     } else if (newRoute.path.startsWith('/power/')) {
         const path = newRoute.path.split('/').pop();
-        if (path === 'tourist') {
+        if (path === 'roles') {
             activeIndex.value = '3-1';
-        } else if (path === 'develop') {
+        } else if (path === 'permissions') {
             activeIndex.value = '3-2';
-        } else if (path === 'manager') {
+        } else if (path === 'users') {
             activeIndex.value = '3-3';
+        }
+    } else if (newRoute.path.startsWith('/management/')) {
+        const path = newRoute.path.split('/').pop();
+        if (path === 'customer') {
+            activeIndex.value = '4-1';
+        } else if (path === 'product') {
+            activeIndex.value = '4-2';
+        } else if (path === 'order') {
+            activeIndex.value = '4-3';
         }
     }
 });
@@ -101,12 +126,21 @@ onMounted(() => {
         activeIndex.value = '2';
     } else if (route.path.startsWith('/power/')) {
         const path = route.path.split('/').pop();
-        if (path === 'tourist') {
+        if (path === 'roles') {
             activeIndex.value = '3-1';
-        } else if (path === 'develop') {
+        } else if (path === 'permissions') {
             activeIndex.value = '3-2';
-        } else if (path === 'manager') {
+        } else if (path === 'users') {
             activeIndex.value = '3-3';
+        }
+    } else if (route.path.startsWith('/management/')) {
+        const path = route.path.split('/').pop();
+        if (path === 'customer') {
+            activeIndex.value = '4-1';
+        } else if (path === 'product') {
+            activeIndex.value = '4-2';
+        } else if (path === 'order') {
+            activeIndex.value = '4-3';
         }
     }
     //登录成功后，组件完成加载，获取用户信息

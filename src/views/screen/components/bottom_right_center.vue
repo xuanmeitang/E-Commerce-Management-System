@@ -112,7 +112,7 @@ onMounted(async () => {
   height: 100%;
   background: url(../images/dataScreen-main-cb.png) no-repeat;
   background-size: 100% 100%;
-  box-sizing: border-box; /* 包括内边距和边框在内的总宽度和高度 */
+  box-sizing: border-box;
 }
 
 .box7 .title {
@@ -124,10 +124,10 @@ onMounted(async () => {
 .box7 .title p {
   color: white;
   font-size: 18px;
-  margin-right: 10px; /* 添加右边距 */
+  margin-right: 10px;
 }
 
 .box7 .charts {
-  height: calc(100% - 60px); /* 减去标题和内边距的高度 */
+  height: calc(100% - 60px); 
 }
 </style>

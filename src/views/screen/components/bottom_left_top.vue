@@ -1,15 +1,25 @@
 <template>
   <div class="box">
     <div class="top">
-      <span class="title">实时游客统计</span>
+      <span class="title">今日销售统计</span>
       <span class="bg"></span>
-      <span class="right">可预约总量<span>99999</span>人</span>
+      <span class="right">目标销售额<span>1000000</span>元</span>
     </div>
     <div class="number">
-      <span v-for="(item, index) in people" :key="index">{{ item }}</span>
+      <span v-for="(item, index) in salesAmount" :key="index">{{ item }}</span>
+    </div>
+    <div class="order-info">
+      <div class="order-item">
+        <span class="label">今日订单:</span>
+        <span class="value">{{ todayOrders }}笔</span>
+      </div>
+      <div class="order-item">
+        <span class="label">完成率:</span>
+        <span class="value">{{ completionRate }}%</span>
+      </div>
     </div>
     <!-- 盒子将来echarts展示图形图标的节点 -->
-    <div class="charts" ref="charts">123</div>
+    <div class="charts" ref="charts"></div>
   </div>
 </template>
 
@@ -18,8 +28,9 @@
 import 'echarts-liquidfill'
 import * as echarts from 'echarts';
 import { ref, onMounted } from 'vue';
-let people = ref('215908人');
-
+let salesAmount = ref('￥658,900');
+let todayOrders = ref(1247);
+let completionRate = ref(85.6);
 
 //获取节点
 let charts = ref();
@@ -30,7 +41,13 @@ onMounted(() => {
   mycharts.setOption({
       //标题组件
       title: {
-          text: '水球图'
+          text: '销售完成度',
+          textStyle: {
+              color: '#29fcff',
+              fontSize: 14
+          },
+          left: 'center',
+          top: '10%'
       },
       //x|y轴组件
       xAxis: {},
@@ -38,16 +55,16 @@ onMounted(() => {
       //系列:决定你展示什么样的图形图标
       series: {
           type: 'liquidFill',//系列
-          data: [0.6, 0.4, 0.2],//展示的数据
+          data: [0.659],//展示的数据 (65.9%)
           waveAnimation: true,//动画
-          animationDuration: 3,
-          animationDurationUpdate: 0,
-          radius: '100%',//半径
+          animationDuration: 3000,
+          animationDurationUpdate: 1000,
+          radius: '80%',//半径
           outline: {//外层边框颜色设置
               show: true,
               borderDistance: 8,
               itemStyle: {
-                  color: 'skyblue',
+                  color: '#29fcff',
                   borderColor: '#294D99',
                   borderWidth: 8,
                   shadowBlur: 20,
@@ -120,9 +137,34 @@ onMounted(() => {
   color: #29fcff;
 }
 
+.box .order-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+
+.box .order-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.box .order-item .label {
+  color: #29fcff;
+  font-size: 14px;
+}
+
+.box .order-item .value {
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .box .charts {
   width: 100%;
-  height: 270px;
-  margin-top: 20px; /* 增加顶部间距 */
+  height: 200px;
+  margin-top: 10px;
 }
 </style>

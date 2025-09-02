@@ -1,6 +1,6 @@
 //通过路由守卫来进行路由鉴权
 import router from "@/router/routes";
-import pinia from '../store'
+import { pinia } from '../store/user'
 import useUserStore from "../store/moudules/user";
 const userStore = useUserStore(pinia)
 const username = userStore.username

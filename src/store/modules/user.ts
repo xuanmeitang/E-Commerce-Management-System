@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import type { loginFormData, userInfoReponseData, ResponseData } from '@/api/user/type'
 import { reqLogin, reqUserInfo } from '@/api/user'
-import { SET_TOKEN, GET_TOKEN } from '@/utils/tonken'
-import { UserState } from './types/type'
+import { SET_TOKEN, GET_TOKEN } from '@/utils/token'
+import type { UserState } from './types/type'
 
-let useUserStore = defineStore('User', {
+const useUserStore = defineStore('User', {
     state: (): UserState => {
         return {
             token: GET_TOKEN(),//用户唯一标识token  
@@ -32,26 +32,40 @@ let useUserStore = defineStore('User', {
         },
         //请求并获取用户信息
         async getUserInfo() {
-            let result: any = await reqUserInfo();
-            if (result.code === 200) {
-                this.username = result.data.checkUser.username;
-                this.avatar = result.data.checkUser.avatar;
-                return 'success'
-            } else {
-                return Promise.reject('failure')
+            try {
+                const result: any = await reqUserInfo();
+                if (result.code === 200) {
+                    // 修正数据结构匹配
+                    this.username = result.data.name || result.data.checkUser?.username || '';
+                    this.avatar = result.data.avatar || result.data.checkUser?.avatar || '';
+                    return 'success';
+                } else {
+                    return Promise.reject(result.message || 'failure');
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+                return Promise.reject(error);
             }
         },
         //清除用户信息
         clear() {
-            this.token = '',
-                this.username = '',
-                this.avatar = '',
-                localStorage.removeItem('TOKEN')
+            this.token = '';
+            this.username = '';
+            this.avatar = '';
+            localStorage.removeItem('TOKEN');
         }
     },
 
     getters: {
-
+        // 获取用户名
+        getUsername(): string {
+            return this.username;
+        },
+        // 获取头像
+        getAvatar(): string {
+            return this.avatar;
+        }
     }
 });
+
 export default useUserStore;

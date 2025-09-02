@@ -114,26 +114,21 @@ onMounted(async () => {
     background-size: 100% 100%;
     margin: 0 0;
     box-sizing: border-box;
-    /* 包括内边距和边框在内的总宽度和高度 */
 }
 
 .box5 .title {
     display: flex;
     align-items: center;
-    /* 垂直居中 */
     margin-bottom: 20px;
-    /* 添加底部边距 */
 }
 
 .box5 .title p {
     color: white;
     font-size: 20px;
     margin-right: 10px;
-    /* 添加右边距 */
 }
 
 .box5 .charts {
     height: calc(100% - 80px);
-    /* 减去标题和内边距的高度 */
 }
 </style>
